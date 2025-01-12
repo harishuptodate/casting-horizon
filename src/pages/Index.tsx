@@ -3,8 +3,10 @@ import { CastingSection } from "@/components/CastingSection";
 import { NavBar } from "@/components/NavBar";
 import { SearchBar } from "@/components/SearchBar";
 import { CategoryFilter } from "@/components/CategoryFilter";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
 
 const categories = [
   "Film",
@@ -17,77 +19,54 @@ const categories = [
   "Student Film",
 ];
 
-const fetchCastings = async () => {
-  // Simulated API call
-  return {
-    featured: [
-      {
-        id: "1",
-        title: "Lead Role in Drama Series",
-        role: "Female Lead, 25-35",
-        type: "TV Series",
-        image: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0",
-      },
-      {
-        id: "2",
-        title: "Commercial Voice Over",
-        role: "Male Voice Actor, 30-45",
-        type: "Commercial",
-        image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04",
-      },
-      {
-        id: "3",
-        title: "Independent Film",
-        role: "Supporting Role, 20-30",
-        type: "Film",
-        image: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0",
-      },
-      {
-        id: "4",
-        title: "Theater Production",
-        role: "Ensemble Cast, 18+",
-        type: "Theater",
-        image: "https://images.unsplash.com/photo-1598387993441-a364f854c3e1",
-      },
-    ],
-    recent: [
-      {
-        id: "5",
-        title: "Music Video Lead",
-        role: "Dancer, 18-25",
-        type: "Music Video",
-        image: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0",
-      },
-      {
-        id: "6",
-        title: "Short Film",
-        role: "Character Actor, 40-50",
-        type: "Film",
-        image: "https://images.unsplash.com/photo-1598387993441-a364f854c3e1",
-      },
-      {
-        id: "7",
-        title: "TV Commercial",
-        role: "Family Members, All Ages",
-        type: "Commercial",
-        image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04",
-      },
-      {
-        id: "8",
-        title: "Web Series",
-        role: "Teen Lead, 16-19",
-        type: "Digital",
-        image: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0",
-      },
-    ],
+const fetchCastings = async ({ pageParam = 0, category = "" }) => {
+  // Simulated API call with pagination and filtering
+  const castings = {
+    items: Array.from({ length: 8 }, (_, i) => ({
+      id: `${pageParam}-${i + 1}`,
+      title: `Casting Call ${pageParam * 8 + i + 1}`,
+      role: "Various Roles",
+      type: category || categories[Math.floor(Math.random() * categories.length)],
+      image: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0",
+      deadline: "7 days",
+      location: "Los Angeles",
+      roles: Math.floor(Math.random() * 10) + 1,
+      description: "Looking for talented actors for an upcoming production...",
+      isVerified: Math.random() > 0.5,
+    })),
+    nextPage: pageParam + 1,
+    hasMore: pageParam < 3, // Limit to 4 pages for demo
   };
+  
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  return castings;
 };
 
 const Index = () => {
-  const { data: castings, isLoading } = useQuery({
-    queryKey: ["castings"],
-    queryFn: fetchCastings,
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const { ref, inView } = useInView();
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["castings", selectedCategory],
+    queryFn: ({ pageParam }) => fetchCastings({ pageParam, category: selectedCategory }),
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextPage : undefined,
   });
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage]);
+
+  const allCastings = data?.pages.flatMap(page => page.items) ?? [];
 
   if (isLoading) {
     return (
@@ -128,19 +107,44 @@ const Index = () => {
       </section>
 
       {/* Search and Filter Section */}
-      <section className="border-b bg-card/50 py-6">
+      <section className="sticky top-16 z-10 border-b bg-card/50 py-6 backdrop-blur-sm">
         <div className="container">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <SearchBar />
-            <CategoryFilter categories={categories} />
+            <CategoryFilter 
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
           </div>
         </div>
       </section>
 
       {/* Main Content */}
       <main className="container py-12">
-        <CastingSection title="Featured Opportunities" castings={castings?.featured || []} />
-        <CastingSection title="Recent Castings" castings={castings?.recent || []} />
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {allCastings.map((casting) => (
+            <CastingCard key={casting.id} {...casting} />
+          ))}
+        </div>
+        
+        {/* Load More Trigger */}
+        <div
+          ref={ref}
+          className="mt-8 flex justify-center"
+        >
+          {isFetchingNextPage ? (
+            <Loader2 className="h-6 w-6 animate-spin" />
+          ) : hasNextPage ? (
+            <Button
+              variant="outline"
+              onClick={() => fetchNextPage()}
+              className="opacity-0"
+            >
+              Load More
+            </Button>
+          ) : null}
+        </div>
       </main>
 
       {/* Footer */}

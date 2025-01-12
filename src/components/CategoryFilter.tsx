@@ -17,11 +17,16 @@ import {
 
 interface CategoryFilterProps {
   categories: string[];
+  selectedCategory: string;
+  onCategoryChange: (category: string) => void;
 }
 
-export function CategoryFilter({ categories }: CategoryFilterProps) {
+export function CategoryFilter({ 
+  categories, 
+  selectedCategory, 
+  onCategoryChange 
+}: CategoryFilterProps) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -32,9 +37,7 @@ export function CategoryFilter({ categories }: CategoryFilterProps) {
           aria-expanded={open}
           className="w-[200px] justify-between"
         >
-          {value
-            ? categories.find((category) => category === value)
-            : "Select category..."}
+          {selectedCategory || "All Categories"}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -43,19 +46,34 @@ export function CategoryFilter({ categories }: CategoryFilterProps) {
           <CommandInput placeholder="Search category..." />
           <CommandEmpty>No category found.</CommandEmpty>
           <CommandGroup>
+            <CommandItem
+              value=""
+              onSelect={() => {
+                onCategoryChange("");
+                setOpen(false);
+              }}
+            >
+              <Check
+                className={cn(
+                  "mr-2 h-4 w-4",
+                  !selectedCategory ? "opacity-100" : "opacity-0"
+                )}
+              />
+              All Categories
+            </CommandItem>
             {categories.map((category) => (
               <CommandItem
                 key={category}
                 value={category}
-                onSelect={(currentValue) => {
-                  setValue(currentValue === value ? "" : currentValue);
+                onSelect={() => {
+                  onCategoryChange(category === selectedCategory ? "" : category);
                   setOpen(false);
                 }}
               >
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    value === category ? "opacity-100" : "opacity-0"
+                    selectedCategory === category ? "opacity-100" : "opacity-0"
                   )}
                 />
                 {category}
