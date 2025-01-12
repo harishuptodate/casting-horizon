@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { CastingSection } from "@/components/CastingSection";
+import { CastingCard } from "@/components/CastingCard";
 import { NavBar } from "@/components/NavBar";
 import { SearchBar } from "@/components/SearchBar";
 import { CategoryFilter } from "@/components/CategoryFilter";
@@ -19,7 +19,26 @@ const categories = [
   "Student Film",
 ];
 
-const fetchCastings = async ({ pageParam = 0, category = "" }) => {
+interface CastingCall {
+  id: string;
+  title: string;
+  role: string;
+  type: string;
+  image: string;
+  deadline?: string;
+  location?: string;
+  roles?: number;
+  description?: string;
+  isVerified?: boolean;
+}
+
+interface CastingResponse {
+  items: CastingCall[];
+  nextPage: number;
+  hasMore: boolean;
+}
+
+const fetchCastings = async ({ pageParam = 0, category = "" }): Promise<CastingResponse> => {
   // Simulated API call with pagination and filtering
   const castings = {
     items: Array.from({ length: 8 }, (_, i) => ({
@@ -57,6 +76,7 @@ const Index = () => {
   } = useInfiniteQuery({
     queryKey: ["castings", selectedCategory],
     queryFn: ({ pageParam }) => fetchCastings({ pageParam, category: selectedCategory }),
+    initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextPage : undefined,
   });
 
