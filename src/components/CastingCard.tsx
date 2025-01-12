@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Calendar, MapPin, Users } from "lucide-react";
 
 interface CastingCardProps {
   title: string;
@@ -23,7 +24,21 @@ export function CastingCard({ title, role, type, image }: CastingCardProps) {
             {type}
           </Badge>
           <h3 className="mb-1 text-lg font-semibold text-white">{title}</h3>
-          <p className="text-sm text-gray-300">{role}</p>
+          <p className="mb-3 text-sm text-gray-300">{role}</p>
+          <div className="flex flex-wrap gap-3 text-xs text-gray-300">
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              <span>Deadline: 7 days</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              <span>Los Angeles</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              <span>10 roles</span>
+            </div>
+          </div>
         </div>
       </div>
     </Card>
