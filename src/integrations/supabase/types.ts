@@ -103,6 +103,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_request_date: string | null
+          admin_request_reason: string | null
+          admin_request_status: string | null
           avatar_url: string | null
           created_at: string
           email: string
@@ -111,6 +114,9 @@ export type Database = {
           role: string | null
         }
         Insert: {
+          admin_request_date?: string | null
+          admin_request_reason?: string | null
+          admin_request_status?: string | null
           avatar_url?: string | null
           created_at?: string
           email: string
@@ -119,6 +125,9 @@ export type Database = {
           role?: string | null
         }
         Update: {
+          admin_request_date?: string | null
+          admin_request_reason?: string | null
+          admin_request_status?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string
@@ -133,7 +142,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      handle_admin_request: {
+        Args: {
+          target_user_id: string
+          new_status: string
+          admin_user_id: string
+        }
+        Returns: undefined
+      }
+      handle_casting_call: {
+        Args: {
+          casting_id: string
+          new_status: string
+          admin_user_id: string
+        }
+        Returns: undefined
+      }
+      request_admin_role: {
+        Args: {
+          user_id: string
+          reason: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

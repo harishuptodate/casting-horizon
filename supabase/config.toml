@@ -1,1 +1,7 @@
 project_id = "kijfwlnoczadpjthcevg"
+[functions.auth]
+verify_jwt = true
+[functions.casting-calls]
+verify_jwt = true
+[functions.webscraping]
+verify_jwt = true
