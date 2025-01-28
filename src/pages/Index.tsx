@@ -4,9 +4,11 @@ import { NavBar } from "@/components/NavBar";
 import { SearchBar } from "@/components/SearchBar";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Loader2, AlertCircle } from "lucide-react";
+import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
+import { fetchCastingCalls } from "@/lib/supabase";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const categories = [
   "Film",
@@ -19,52 +21,7 @@ const categories = [
   "Student Film",
 ];
 
-interface CastingCall {
-  id: string;
-  title: string;
-  role: string;
-  type: string;
-  image: string;
-  deadline?: string;
-  location?: string;
-  roles?: number;
-  description?: string;
-  isVerified?: boolean;
-}
-
-interface CastingResponse {
-  items: CastingCall[];
-  nextPage: number;
-  hasMore: boolean;
-}
-
-const fetchCastings = async ({ pageParam = 0, category = "" }): Promise<CastingResponse> => {
-  // Simulated API call with pagination and filtering
-  const castings = {
-    items: Array.from({ length: 8 }, (_, i) => ({
-      id: `${pageParam}-${i + 1}`,
-      title: `Casting Call ${pageParam * 8 + i + 1}`,
-      role: "Various Roles",
-      type: category || categories[Math.floor(Math.random() * categories.length)],
-      image: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0",
-      deadline: "7 days",
-      location: "Los Angeles",
-      roles: Math.floor(Math.random() * 10) + 1,
-      description: "Looking for talented actors for an upcoming production...",
-      isVerified: Math.random() > 0.5,
-    })),
-    nextPage: pageParam + 1,
-    hasMore: pageParam < 3, // Limit to 4 pages for demo
-  };
-  
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  return castings;
-};
-
 const Index = () => {
-  const [selectedCategory, setSelectedCategory] = useState("");
   const { ref, inView } = useInView();
 
   const {
@@ -73,9 +30,11 @@ const Index = () => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    isError,
+    error
   } = useInfiniteQuery({
-    queryKey: ["castings", selectedCategory],
-    queryFn: ({ pageParam }) => fetchCastings({ pageParam, category: selectedCategory }),
+    queryKey: ["castings"],
+    queryFn: ({ pageParam = 0 }) => fetchCastingCalls({ pageParam }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextPage : undefined,
   });
@@ -86,8 +45,6 @@ const Index = () => {
     }
   }, [inView, fetchNextPage, hasNextPage]);
 
-  const allCastings = data?.pages.flatMap(page => page.items) ?? [];
-
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -95,6 +52,21 @@ const Index = () => {
       </div>
     );
   }
+
+  if (isError) {
+    return (
+      <div className="flex h-screen items-center justify-center p-4">
+        <Alert variant="destructive" className="max-w-lg">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error?.message || "Failed to load casting calls. Please try again later."}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  const allCastings = data?.pages.flatMap(page => page.items) ?? [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -133,8 +105,8 @@ const Index = () => {
             <SearchBar />
             <CategoryFilter 
               categories={categories}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
+              selectedCategory=""
+              onCategoryChange={() => {}}
             />
           </div>
         </div>
@@ -142,11 +114,17 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container py-12">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {allCastings.map((casting) => (
-            <CastingCard key={casting.id} {...casting} />
-          ))}
-        </div>
+        {allCastings.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-lg text-muted-foreground">No casting calls available.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {allCastings.map((casting) => (
+              <CastingCard key={casting.id} {...casting} />
+            ))}
+          </div>
+        )}
         
         {/* Load More Trigger */}
         <div
@@ -180,15 +158,9 @@ const Index = () => {
             <div>
               <h3 className="mb-4 text-lg font-semibold">Quick Links</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <a href="#" className="hover:text-primary">Browse Castings</a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-primary">Submit Casting</a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-primary">Success Stories</a>
-                </li>
+                <li><a href="#" className="hover:text-primary">Browse Castings</a></li>
+                <li><a href="#" className="hover:text-primary">Submit Casting</a></li>
+                <li><a href="#" className="hover:text-primary">Success Stories</a></li>
               </ul>
             </div>
             <div>
