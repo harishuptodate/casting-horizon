@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/lib/supabase";
 
 interface AuthModalProps {
   mode?: "signin" | "signup";
@@ -27,16 +28,28 @@ export function AuthModal({ mode = "signin", trigger }: AuthModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(email, password);
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast({
+          title: "Success!",
+          description: "Please check your email to verify your account.",
+        });
+      } else {
+        await login(email, password);
+        toast({
+          title: "Success!",
+          description: "You have successfully logged in.",
+        });
+      }
       setIsOpen(false);
-      toast({
-        title: "Success!",
-        description: "You have successfully logged in.",
-      });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Invalid credentials. Please try again.",
+        description: error.message || "An error occurred. Please try again.",
         variant: "destructive",
       });
     }

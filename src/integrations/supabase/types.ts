@@ -9,7 +9,125 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      casting_calls: {
+        Row: {
+          created_at: string
+          created_by: string
+          deadline: string
+          description: string
+          id: string
+          image: string
+          is_verified: boolean | null
+          location: string
+          role: string
+          roles: number
+          status: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          deadline: string
+          description: string
+          id?: string
+          image: string
+          is_verified?: boolean | null
+          location: string
+          role: string
+          roles: number
+          status?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deadline?: string
+          description?: string
+          id?: string
+          image?: string
+          is_verified?: boolean | null
+          location?: string
+          role?: string
+          roles?: number
+          status?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "casting_calls_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorites: {
+        Row: {
+          casting_call_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          casting_call_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          casting_call_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_casting_call_id_fkey"
+            columns: ["casting_call_id"]
+            isOneToOne: false
+            referencedRelation: "casting_calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          role: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          role?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          role?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
