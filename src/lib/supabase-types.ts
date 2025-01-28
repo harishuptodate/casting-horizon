@@ -28,6 +28,7 @@ export interface CastingCall {
   created_at: string;
   created_by: string;
   status: 'pending' | 'approved' | 'rejected';
+  profiles?: Profile;
 }
 
 export interface Favorite {
