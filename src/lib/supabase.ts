@@ -6,7 +6,13 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
-export async function fetchCastingCalls({ pageParam = 0, category = "" }) {
+export async function fetchCastingCalls({ 
+  pageParam = 0, 
+  category = "" 
+}: { 
+  pageParam?: number; 
+  category?: string; 
+}) {
   const pageSize = 8;
   
   let query = supabase
