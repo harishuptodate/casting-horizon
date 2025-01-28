@@ -1,15 +1,14 @@
-import React, { createContext, useContext, useState } from "react";
-
-interface User {
-  id: string;
-  email: string;
-  role: "user" | "admin";
-}
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { User } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
+import { Profile } from "@/lib/supabase-types";
+import { toast } from "sonner";
 
 interface AuthContextType {
   user: User | null;
+  profile: Profile | null;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAdmin: boolean;
 }
 
@@ -17,27 +16,82 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    // Check active sessions and set the user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      }
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function fetchProfile(userId: string) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return;
+    }
+
+    setProfile(data);
+  }
 
   const login = async (email: string, password: string) => {
-    // TODO: Implement actual authentication
-    setUser({
-      id: "1",
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      role: "user",
+      password,
     });
+
+    if (error) {
+      toast.error("Login failed", {
+        description: error.message,
+      });
+      throw error;
+    }
+
+    toast.success("Successfully logged in!");
   };
 
-  const logout = () => {
-    setUser(null);
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Logout failed", {
+        description: error.message,
+      });
+      throw error;
+    }
+    toast.success("Successfully logged out!");
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        profile,
         login,
         logout,
-        isAdmin: user?.role === "admin",
+        isAdmin: profile?.role === "admin",
       }}
     >
       {children}
