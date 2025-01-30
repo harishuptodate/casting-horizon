@@ -3,12 +3,18 @@ import { CastingCard } from "@/components/CastingCard";
 import { NavBar } from "@/components/NavBar";
 import { SearchBar } from "@/components/SearchBar";
 import { CategoryFilter } from "@/components/CategoryFilter";
+import { AgeRangeFilter } from "@/components/AgeRangeFilter";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2, AlertCircle } from "lucide-react";
-import { useEffect } from "react";
+import { Loader2, AlertCircle, Filter } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { fetchCastingCalls } from "@/lib/supabase";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const categories = [
   "Film",
@@ -23,6 +29,9 @@ const categories = [
 
 const Index = () => {
   const { ref, inView } = useInView();
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [minAge, setMinAge] = useState<number | undefined>();
+  const [maxAge, setMaxAge] = useState<number | undefined>();
 
   const {
     data,
@@ -31,10 +40,17 @@ const Index = () => {
     isFetchingNextPage,
     isLoading,
     isError,
-    error
+    error,
+    refetch
   } = useInfiniteQuery({
-    queryKey: ["castings"],
-    queryFn: ({ pageParam = 0 }) => fetchCastingCalls({ pageParam }),
+    queryKey: ["castings", selectedCategory, minAge, maxAge],
+    queryFn: ({ pageParam = 0 }) => 
+      fetchCastingCalls({ 
+        pageParam, 
+        category: selectedCategory,
+        minAge,
+        maxAge
+      }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextPage : undefined,
   });
@@ -44,6 +60,11 @@ const Index = () => {
       fetchNextPage();
     }
   }, [inView, fetchNextPage, hasNextPage]);
+
+  const handleAgeChange = (newMinAge: number | undefined, newMaxAge: number | undefined) => {
+    setMinAge(newMinAge);
+    setMaxAge(newMaxAge);
+  };
 
   if (isLoading) {
     return (
@@ -103,11 +124,24 @@ const Index = () => {
         <div className="container">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <SearchBar />
-            <CategoryFilter 
-              categories={categories}
-              selectedCategory=""
-              onCategoryChange={() => {}}
-            />
+            <div className="flex gap-4">
+              <CategoryFilter 
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <Filter className="h-4 w-4" />
+                    Age Range
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <AgeRangeFilter onAgeChange={handleAgeChange} />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         </div>
       </section>
