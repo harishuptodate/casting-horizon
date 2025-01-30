@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -50,6 +51,8 @@ interface CastingCallForm {
 export function SubmitCastingCall() {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [requestAdmin, setRequestAdmin] = useState(false);
+  const [adminRequestReason, setAdminRequestReason] = useState("");
 
   const form = useForm<CastingCallForm>({
     defaultValues: {
@@ -72,22 +75,41 @@ export function SubmitCastingCall() {
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("casting_calls").insert({
+      // Submit casting call
+      const { error: castingError } = await supabase.from("casting_calls").insert({
         ...data,
         created_by: user.id,
       });
 
-      if (error) throw error;
+      if (castingError) throw castingError;
+
+      // Submit admin request if checked
+      if (requestAdmin) {
+        const { error: adminRequestError } = await supabase.rpc(
+          "request_admin_role",
+          {
+            user_id: user.id,
+            reason: adminRequestReason,
+          }
+        );
+
+        if (adminRequestError) throw adminRequestError;
+        toast.success("Admin request submitted successfully!");
+      }
 
       toast.success("Casting call submitted successfully!");
       form.reset();
+      setRequestAdmin(false);
+      setAdminRequestReason("");
     } catch (error) {
-      console.error("Error submitting casting call:", error);
-      toast.error("Failed to submit casting call");
+      console.error("Error submitting:", error);
+      toast.error("Failed to submit");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // ... keep existing code (form fields JSX)
 
   return (
     <div className="mx-auto max-w-2xl p-6">
@@ -255,6 +277,31 @@ export function SubmitCastingCall() {
               </FormItem>
             )}
           />
+          
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="requestAdmin"
+                checked={requestAdmin}
+                onCheckedChange={(checked) => setRequestAdmin(checked as boolean)}
+              />
+              <label
+                htmlFor="requestAdmin"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Request Admin Rights
+              </label>
+            </div>
+            {requestAdmin && (
+              <Textarea
+                placeholder="Please explain why you're requesting admin rights..."
+                value={adminRequestReason}
+                onChange={(e) => setAdminRequestReason(e.target.value)}
+                className="h-32"
+                required
+              />
+            )}
+          </div>
 
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? (

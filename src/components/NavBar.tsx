@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "./AuthModal";
-import { Plus, UserCog } from "lucide-react";
+import { Plus, UserCog, LogIn } from "lucide-react";
 
 export function NavBar() {
   const { user, isAdmin } = useAuth();
@@ -31,10 +31,19 @@ export function NavBar() {
                   </Button>
                 </Link>
               )}
-              <AuthModal />
+              <Button variant="destructive" onClick={() => useAuth().logout()}>
+                Logout
+              </Button>
             </>
           ) : (
-            <AuthModal />
+            <AuthModal
+              trigger={
+                <Button variant="default" className="gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Sign In
+                </Button>
+              }
+            />
           )}
         </div>
       </div>

@@ -12,20 +12,20 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface AuthModalProps {
-  mode?: "signin" | "signup";
   trigger?: React.ReactNode;
 }
 
-export function AuthModal({ mode = "signin", trigger }: AuthModalProps) {
+export function AuthModal({ trigger }: AuthModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useAuth();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, mode: "signin" | "signup") => {
     e.preventDefault();
     try {
       if (mode === "signup") {
@@ -60,42 +60,79 @@ export function AuthModal({ mode = "signin", trigger }: AuthModalProps) {
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{mode === "signin" ? "Sign In" : "Sign Up"}</DialogTitle>
+          <DialogTitle>Welcome to CastLink</DialogTitle>
           <DialogDescription>
-            {mode === "signin"
-              ? "Enter your credentials to access your account"
-              : "Create an account to get started"}
+            Sign in to your account or create a new one
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">
-              Email
-            </label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
-              Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full">
-            {mode === "signin" ? "Sign In" : "Sign Up"}
-          </Button>
-        </form>
+        <Tabs defaultValue="signin" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="signin">Sign In</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          </TabsList>
+          <TabsContent value="signin">
+            <form onSubmit={(e) => handleSubmit(e, "signin")} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="signin-email" className="text-sm font-medium">
+                  Email
+                </label>
+                <Input
+                  id="signin-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="signin-password" className="text-sm font-medium">
+                  Password
+                </label>
+                <Input
+                  id="signin-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full">
+                Sign In
+              </Button>
+            </form>
+          </TabsContent>
+          <TabsContent value="signup">
+            <form onSubmit={(e) => handleSubmit(e, "signup")} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="signup-email" className="text-sm font-medium">
+                  Email
+                </label>
+                <Input
+                  id="signup-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="signup-password" className="text-sm font-medium">
+                  Password
+                </label>
+                <Input
+                  id="signup-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full">
+                Sign Up
+              </Button>
+            </form>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
