@@ -5,7 +5,7 @@ import { AuthModal } from "./AuthModal";
 import { Plus, UserCog, LogIn } from "lucide-react";
 
 export function NavBar() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -31,7 +31,7 @@ export function NavBar() {
                   </Button>
                 </Link>
               )}
-              <Button variant="destructive" onClick={() => useAuth().logout()}>
+              <Button variant="destructive" onClick={logout}>
                 Logout
               </Button>
             </>
