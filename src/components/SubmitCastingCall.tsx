@@ -1,0 +1,273 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+
+const castingTypes = [
+  "Film",
+  "TV",
+  "Theater",
+  "Commercial",
+  "Voice Over",
+  "Music Video",
+  "Web Series",
+  "Student Film",
+];
+
+interface CastingCallForm {
+  title: string;
+  role: string;
+  type: string;
+  description: string;
+  image: string;
+  deadline: string;
+  location: string;
+  roles: number;
+  min_age?: number;
+  max_age?: number;
+}
+
+export function SubmitCastingCall() {
+  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<CastingCallForm>({
+    defaultValues: {
+      title: "",
+      role: "",
+      type: "Film",
+      description: "",
+      image: "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0",
+      deadline: "",
+      location: "",
+      roles: 1,
+    },
+  });
+
+  const onSubmit = async (data: CastingCallForm) => {
+    if (!user) {
+      toast.error("You must be logged in to submit a casting call");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from("casting_calls").insert({
+        ...data,
+        created_by: user.id,
+      });
+
+      if (error) throw error;
+
+      toast.success("Casting call submitted successfully!");
+      form.reset();
+    } catch (error) {
+      console.error("Error submitting casting call:", error);
+      toast.error("Failed to submit casting call");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-2xl p-6">
+      <h2 className="mb-6 text-2xl font-bold">Submit a Casting Call</h2>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter casting call title" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Role</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter role description" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Type</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select casting type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {castingTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Enter detailed description"
+                    className="h-32"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="min_age"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Minimum Age</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Min age"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(e.target.value ? parseInt(e.target.value) : undefined)
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="max_age"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Maximum Age</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Max age"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(e.target.value ? parseInt(e.target.value) : undefined)
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="deadline"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Deadline</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter location" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="roles"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Number of Roles</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="1"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Submit Casting Call"
+            )}
+          </Button>
+        </form>
+      </Form>
+    </div>
+  );
+}
