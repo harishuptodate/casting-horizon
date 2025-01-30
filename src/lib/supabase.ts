@@ -18,13 +18,19 @@ try {
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
+interface FetchCastingCallsParams {
+  pageParam?: number;
+  category?: string;
+  minAge?: number;
+  maxAge?: number;
+}
+
 export async function fetchCastingCalls({ 
   pageParam = 0, 
-  category = "" 
-}: { 
-  pageParam?: number; 
-  category?: string; 
-}) {
+  category = "",
+  minAge,
+  maxAge,
+}: FetchCastingCallsParams) {
   try {
     const pageSize = 8;
     
@@ -37,6 +43,14 @@ export async function fetchCastingCalls({
 
     if (category) {
       query = query.eq('type', category);
+    }
+
+    // Add age range filtering
+    if (minAge !== undefined) {
+      query = query.gte('min_age', minAge);
+    }
+    if (maxAge !== undefined) {
+      query = query.lte('max_age', maxAge);
     }
 
     const { data, error } = await query;

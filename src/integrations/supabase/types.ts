@@ -19,6 +19,8 @@ export type Database = {
           image: string
           is_verified: boolean | null
           location: string
+          max_age: number | null
+          min_age: number | null
           role: string
           roles: number
           status: string | null
@@ -34,6 +36,8 @@ export type Database = {
           image: string
           is_verified?: boolean | null
           location: string
+          max_age?: number | null
+          min_age?: number | null
           role: string
           roles: number
           status?: string | null
@@ -49,6 +53,8 @@ export type Database = {
           image?: string
           is_verified?: boolean | null
           location?: string
+          max_age?: number | null
+          min_age?: number | null
           role?: string
           roles?: number
           status?: string | null

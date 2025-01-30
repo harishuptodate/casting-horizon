@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Users, Heart, Share2 } from "lucide-react";
+import { Calendar, MapPin, Users, Heart, Share2, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
@@ -16,6 +16,8 @@ interface CastingCardProps {
   roles?: number;
   description?: string;
   isVerified?: boolean;
+  min_age?: number;
+  max_age?: number;
 }
 
 export function CastingCard({
@@ -28,6 +30,8 @@ export function CastingCard({
   roles = 10,
   description,
   isVerified = false,
+  min_age,
+  max_age,
 }: CastingCardProps) {
   const [isFavorited, setIsFavorited] = useState(false);
 
@@ -45,6 +49,17 @@ export function CastingCard({
       title: "Link copied",
       description: "The link has been copied to your clipboard",
     });
+  };
+
+  const getAgeRangeText = () => {
+    if (min_age && max_age) {
+      return `${min_age}-${max_age} years`;
+    } else if (min_age) {
+      return `${min_age}+ years`;
+    } else if (max_age) {
+      return `Up to ${max_age} years`;
+    }
+    return "Any age";
   };
 
   return (
@@ -103,6 +118,10 @@ export function CastingCard({
             <div className="flex items-center gap-1">
               <Users className="h-3 w-3" />
               <span>{roles} roles</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <User className="h-3 w-3" />
+              <span>{getAgeRangeText()}</span>
             </div>
           </div>
         </div>
