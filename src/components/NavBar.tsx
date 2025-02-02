@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "./AuthModal";
-import { Plus, UserCog, LogIn } from "lucide-react";
+import { Plus, ClipboardList, LogIn } from "lucide-react";
 
 export function NavBar() {
   const { user, profile, logout } = useAuth();
@@ -34,8 +34,8 @@ export function NavBar() {
               {profile?.role === 'admin' && (
                 <Link to="/admin">
                   <Button variant="outline" className="gap-2">
-                    <UserCog className="h-4 w-4" />
-                    Admin
+                    <ClipboardList className="h-4 w-4" />
+                    Requests
                   </Button>
                 </Link>
               )}
