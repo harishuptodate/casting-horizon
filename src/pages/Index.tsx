@@ -28,12 +28,12 @@ const categories = [
 ];
 
 const fetchCastingCalls = async ({ pageParam = 0, category = "", minAge, maxAge }) => {
+  console.log('Fetching casting calls with params:', { pageParam, category, minAge, maxAge });
   try {
     const pageSize = 8;
     let query = supabase
       .from('casting_calls')
       .select('*')
-      .eq('status', 'approved')
       .range(pageParam * pageSize, (pageParam + 1) * pageSize - 1)
       .order('created_at', { ascending: false });
 
@@ -50,8 +50,12 @@ const fetchCastingCalls = async ({ pageParam = 0, category = "", minAge, maxAge 
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
 
+    console.log('Fetched casting calls:', data);
     return {
       items: data || [],
       nextPage: pageParam + 1,
@@ -59,7 +63,7 @@ const fetchCastingCalls = async ({ pageParam = 0, category = "", minAge, maxAge 
     };
   } catch (error) {
     console.error('Error fetching casting calls:', error);
-    throw new Error('Failed to fetch casting calls');
+    throw error;
   }
 };
 
@@ -183,35 +187,40 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container py-12">
-        {allCastings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-lg text-muted-foreground">No casting calls available.</p>
+        {isLoading ? (
+          <div className="flex h-[200px] items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin" />
           </div>
+        ) : isError ? (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {error?.message || "Failed to load casting calls"}
+            </AlertDescription>
+          </Alert>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {allCastings.map((casting) => (
-              <CastingCard key={casting.id} {...casting} />
-            ))}
-          </div>
+          <>
+            {data?.pages.some(page => page.items.length > 0) ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {data.pages.map((page) =>
+                  page.items.map((casting) => (
+                    <CastingCard key={casting.id} {...casting} />
+                  ))
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12">
+                <p className="text-lg text-muted-foreground">No casting calls available.</p>
+              </div>
+            )}
+            
+            <div ref={ref} className="mt-8 flex justify-center">
+              {isFetchingNextPage && (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              )}
+            </div>
+          </>
         )}
-        
-        {/* Load More Trigger */}
-        <div
-          ref={ref}
-          className="mt-8 flex justify-center"
-        >
-          {isFetchingNextPage ? (
-            <Loader2 className="h-6 w-6 animate-spin" />
-          ) : hasNextPage ? (
-            <Button
-              variant="outline"
-              onClick={() => fetchNextPage()}
-              className="opacity-0"
-            >
-              Load More
-            </Button>
-          ) : null}
-        </div>
       </main>
 
       {/* Footer */}
