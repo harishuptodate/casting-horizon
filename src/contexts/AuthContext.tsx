@@ -75,17 +75,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      // Clear local state first
+      setUser(null);
+      setProfile(null);
+
       const { error } = await supabase.auth.signOut();
       if (error) {
+        console.error('Logout error:', error);
         toast.error("Logout failed", {
           description: error.message,
         });
-        throw error;
+        return;
       }
-      
-      // Clear local state
-      setUser(null);
-      setProfile(null);
       
       toast.success("Successfully logged out!");
     } catch (error: any) {
