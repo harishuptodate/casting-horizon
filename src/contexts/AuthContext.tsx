@@ -74,14 +74,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast.error("Logout failed", {
+          description: error.message,
+        });
+        throw error;
+      }
+      
+      // Clear local state
+      setUser(null);
+      setProfile(null);
+      
+      toast.success("Successfully logged out!");
+    } catch (error: any) {
+      console.error('Logout error:', error);
       toast.error("Logout failed", {
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
       });
-      throw error;
     }
-    toast.success("Successfully logged out!");
   };
 
   return (
