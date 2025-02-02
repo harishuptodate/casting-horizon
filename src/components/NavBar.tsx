@@ -5,7 +5,7 @@ import { AuthModal } from "./AuthModal";
 import { Plus, UserCog, LogIn } from "lucide-react";
 
 export function NavBar() {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -23,7 +23,7 @@ export function NavBar() {
                   Submit Casting Call
                 </Button>
               </Link>
-              {isAdmin && (
+              {profile?.role === 'admin' && (
                 <Link to="/admin">
                   <Button variant="outline" className="gap-2">
                     <UserCog className="h-4 w-4" />

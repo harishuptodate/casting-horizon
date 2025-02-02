@@ -8,7 +8,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, AlertCircle, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { fetchCastingCalls } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Popover,
@@ -27,6 +27,42 @@ const categories = [
   "Student Film",
 ];
 
+const fetchCastingCalls = async ({ pageParam = 0, category = "", minAge, maxAge }) => {
+  try {
+    const pageSize = 8;
+    let query = supabase
+      .from('casting_calls')
+      .select('*')
+      .eq('status', 'approved')
+      .range(pageParam * pageSize, (pageParam + 1) * pageSize - 1)
+      .order('created_at', { ascending: false });
+
+    if (category) {
+      query = query.eq('type', category);
+    }
+
+    if (minAge !== undefined) {
+      query = query.gte('min_age', minAge);
+    }
+    if (maxAge !== undefined) {
+      query = query.lte('max_age', maxAge);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    return {
+      items: data || [],
+      nextPage: pageParam + 1,
+      hasMore: data && data.length === pageSize,
+    };
+  } catch (error) {
+    console.error('Error fetching casting calls:', error);
+    throw new Error('Failed to fetch casting calls');
+  }
+};
+
 const Index = () => {
   const { ref, inView } = useInView();
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -41,7 +77,6 @@ const Index = () => {
     isLoading,
     isError,
     error,
-    refetch
   } = useInfiniteQuery({
     queryKey: ["castings", selectedCategory, minAge, maxAge],
     queryFn: ({ pageParam = 0 }) => 
