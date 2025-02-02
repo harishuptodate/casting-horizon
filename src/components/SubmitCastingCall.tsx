@@ -48,7 +48,12 @@ interface CastingCallForm {
   max_age?: number;
 }
 
-export function SubmitCastingCall() {
+interface SubmitCastingCallProps {
+  hideAdminRequest?: boolean;
+  onSuccess?: () => void;
+}
+
+export function SubmitCastingCall({ hideAdminRequest = false, onSuccess }: SubmitCastingCallProps) {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestAdmin, setRequestAdmin] = useState(false);
@@ -101,6 +106,7 @@ export function SubmitCastingCall() {
       form.reset();
       setRequestAdmin(false);
       setAdminRequestReason("");
+      onSuccess?.();
     } catch (error) {
       console.error("Error submitting:", error);
       toast.error("Failed to submit");
@@ -109,11 +115,8 @@ export function SubmitCastingCall() {
     }
   };
 
-  // ... keep existing code (form fields JSX)
-
   return (
     <div className="mx-auto max-w-2xl p-6">
-      <h2 className="mb-6 text-2xl font-bold">Submit a Casting Call</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -278,30 +281,32 @@ export function SubmitCastingCall() {
             )}
           />
           
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="requestAdmin"
-                checked={requestAdmin}
-                onCheckedChange={(checked) => setRequestAdmin(checked as boolean)}
-              />
-              <label
-                htmlFor="requestAdmin"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Request Admin Rights
-              </label>
+          {!hideAdminRequest && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="requestAdmin"
+                  checked={requestAdmin}
+                  onCheckedChange={(checked) => setRequestAdmin(checked as boolean)}
+                />
+                <label
+                  htmlFor="requestAdmin"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Request Admin Rights
+                </label>
+              </div>
+              {requestAdmin && (
+                <Textarea
+                  placeholder="Please explain why you're requesting admin rights..."
+                  value={adminRequestReason}
+                  onChange={(e) => setAdminRequestReason(e.target.value)}
+                  className="h-32"
+                  required
+                />
+              )}
             </div>
-            {requestAdmin && (
-              <Textarea
-                placeholder="Please explain why you're requesting admin rights..."
-                value={adminRequestReason}
-                onChange={(e) => setAdminRequestReason(e.target.value)}
-                className="h-32"
-                required
-              />
-            )}
-          </div>
+          )}
 
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? (

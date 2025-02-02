@@ -13,14 +13,23 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, FilePlus } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { SubmitCastingCall } from "@/components/SubmitCastingCall";
 
 const Admin = () => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!isAdmin) {
@@ -94,7 +103,23 @@ const Admin = () => {
 
   return (
     <div className="container py-12">
-      <h1 className="mb-8 text-3xl font-bold">Admin Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <FilePlus className="h-4 w-4" />
+              Submit Casting Call
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Submit a New Casting Call</DialogTitle>
+            </DialogHeader>
+            <SubmitCastingCall hideAdminRequest onSuccess={() => setIsDialogOpen(false)} />
+          </DialogContent>
+        </Dialog>
+      </div>
       
       <Tabs defaultValue="castings" className="space-y-4">
         <TabsList>
