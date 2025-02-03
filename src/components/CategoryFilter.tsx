@@ -1,7 +1,5 @@
-import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -21,54 +19,23 @@ interface CategoryFilterProps {
   onCategoryChange: (category: string) => void;
 }
 
-export function CategoryFilter({ 
-  categories, 
-  selectedCategory, 
-  onCategoryChange 
+export function CategoryFilter({
+  categories,
+  selectedCategory,
+  onCategoryChange,
 }: CategoryFilterProps) {
-  const [open, setOpen] = React.useState(false);
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[200px] justify-between"
-        >
-          {selectedCategory || "All Categories"}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
+    <Popover>
       <PopoverContent className="w-[200px] p-0">
         <Command>
           <CommandInput placeholder="Search category..." />
           <CommandEmpty>No category found.</CommandEmpty>
           <CommandGroup>
-            <CommandItem
-              value=""
-              onSelect={() => {
-                onCategoryChange("");
-                setOpen(false);
-              }}
-            >
-              <Check
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  !selectedCategory ? "opacity-100" : "opacity-0"
-                )}
-              />
-              All Categories
-            </CommandItem>
             {categories.map((category) => (
               <CommandItem
                 key={category}
                 value={category}
-                onSelect={() => {
-                  onCategoryChange(category === selectedCategory ? "" : category);
-                  setOpen(false);
-                }}
+                onSelect={() => onCategoryChange(category)}
               >
                 <Check
                   className={cn(
