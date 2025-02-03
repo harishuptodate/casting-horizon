@@ -43,9 +43,15 @@ const Admin = () => {
       const { data, error } = await supabase
         .from("casting_calls")
         .select("*, profiles(full_name, email)")
-        .eq("status", "pending");
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching pending castings:", error);
+        throw error;
+      }
+      
+      console.log("Fetched pending castings:", data); // Debug log
       return data;
     },
   });
