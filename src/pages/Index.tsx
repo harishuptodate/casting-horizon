@@ -8,7 +8,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, AlertCircle, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { supabase } from "@/lib/supabase";
+import { fetchCastingCalls } from "@/lib/supabase";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Popover,
@@ -26,46 +26,6 @@ const categories = [
   "Web Series",
   "Student Film",
 ];
-
-const fetchCastingCalls = async ({ pageParam = 0, category = "", minAge, maxAge }) => {
-  console.log('Fetching casting calls with params:', { pageParam, category, minAge, maxAge });
-  try {
-    const pageSize = 8;
-    let query = supabase
-      .from('casting_calls')
-      .select('*')
-      .range(pageParam * pageSize, (pageParam + 1) * pageSize - 1)
-      .order('created_at', { ascending: false });
-
-    if (category) {
-      query = query.eq('type', category);
-    }
-
-    if (minAge !== undefined) {
-      query = query.gte('min_age', minAge);
-    }
-    if (maxAge !== undefined) {
-      query = query.lte('max_age', maxAge);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
-    }
-
-    console.log('Fetched casting calls:', data);
-    return {
-      items: data || [],
-      nextPage: pageParam + 1,
-      hasMore: data && data.length === pageSize,
-    };
-  } catch (error) {
-    console.error('Error fetching casting calls:', error);
-    throw error;
-  }
-};
 
 const Index = () => {
   const { ref, inView } = useInView();
@@ -91,14 +51,14 @@ const Index = () => {
         maxAge
       }),
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextPage : undefined,
+    getNextPageParam: (lastPage) => lastPage?.hasMore ? lastPage.nextPage : undefined,
   });
 
   useEffect(() => {
-    if (inView && hasNextPage) {
+    if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView, fetchNextPage, hasNextPage]);
+  }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const handleAgeChange = (newMinAge: number | undefined, newMaxAge: number | undefined) => {
     setMinAge(newMinAge);
@@ -126,7 +86,7 @@ const Index = () => {
     );
   }
 
-  const allCastings = data?.pages.flatMap(page => page.items) ?? [];
+  const allCastings = data?.pages.flatMap(page => page?.items || []) ?? [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -187,40 +147,23 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container py-12">
-        {isLoading ? (
-          <div className="flex h-[200px] items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
+        {allCastings.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {allCastings.map((casting) => (
+              <CastingCard key={casting.id} {...casting} />
+            ))}
           </div>
-        ) : isError ? (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {error?.message || "Failed to load casting calls"}
-            </AlertDescription>
-          </Alert>
         ) : (
-          <>
-            {data?.pages.some(page => page.items.length > 0) ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {data.pages.map((page) =>
-                  page.items.map((casting) => (
-                    <CastingCard key={casting.id} {...casting} />
-                  ))
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12">
-                <p className="text-lg text-muted-foreground">No casting calls available.</p>
-              </div>
-            )}
-            
-            <div ref={ref} className="mt-8 flex justify-center">
-              {isFetchingNextPage && (
-                <Loader2 className="h-6 w-6 animate-spin" />
-              )}
-            </div>
-          </>
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-lg text-muted-foreground">No casting calls available.</p>
+          </div>
         )}
+        
+        <div ref={ref} className="mt-8 flex justify-center">
+          {isFetchingNextPage && (
+            <Loader2 className="h-6 w-6 animate-spin" />
+          )}
+        </div>
       </main>
 
       {/* Footer */}
