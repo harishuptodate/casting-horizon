@@ -14,12 +14,15 @@ export function PendingCastingCalls() {
   const { data: pendingCastings, isLoading: castingsLoading } = useQuery({
     queryKey: ["pendingCastings"],
     queryFn: async () => {
+      console.log("Starting to fetch pending castings");
+      console.log("Current user:", user?.id);
+      console.log("Is admin:", isAdmin);
+
       if (!user?.id || !isAdmin) {
         console.log("User not authorized to view pending castings");
         return [];
       }
 
-      console.log("Fetching pending castings for admin");
       const { data, error } = await supabase
         .from("casting_calls")
         .select(`
@@ -29,8 +32,7 @@ export function PendingCastingCalls() {
             email
           )
         `)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
+        .eq("status", "pending");
 
       if (error) {
         console.error("Error fetching pending castings:", error);
@@ -45,6 +47,9 @@ export function PendingCastingCalls() {
 
   const handleCastingCall = async (id: string, status: "approved" | "rejected") => {
     try {
+      console.log("Handling casting call:", id, status);
+      console.log("Admin user:", user?.id);
+
       const { error } = await supabase.rpc("handle_casting_call", {
         casting_id: id,
         new_status: status,
