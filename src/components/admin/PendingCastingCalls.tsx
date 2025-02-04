@@ -8,28 +8,13 @@ import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export function PendingCastingCalls() {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: pendingCastings, isLoading: castingsLoading } = useQuery({
     queryKey: ["pendingCastings"],
     queryFn: async () => {
-      console.log("Fetching pending castings...");
-      console.log("Current user:", user?.id);
-      console.log("Is admin:", isAdmin);
-      
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user?.id)
-        .single();
-      
-      console.log("User profile:", profile);
-
-      if (!profile || profile.role !== 'admin') {
-        console.log("User is not an admin");
-        return [];
-      }
+      if (!user?.id) return [];
 
       const { data, error } = await supabase
         .from("casting_calls")
@@ -42,10 +27,9 @@ export function PendingCastingCalls() {
         throw error;
       }
       
-      console.log("Fetched pending castings:", data);
-      return data;
+      return data || [];
     },
-    enabled: !!user,
+    enabled: !!user?.id,
   });
 
   const handleCastingCall = async (id: string, status: "approved" | "rejected") => {
