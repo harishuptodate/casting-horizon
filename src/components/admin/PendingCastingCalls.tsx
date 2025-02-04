@@ -23,6 +23,20 @@ export function PendingCastingCalls() {
         return [];
       }
 
+      // First, let's check if there are any pending castings at all
+      const { count, error: countError } = await supabase
+        .from("casting_calls")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+
+      console.log("Total pending castings count:", count);
+
+      if (countError) {
+        console.error("Error counting pending castings:", countError);
+        throw countError;
+      }
+
+      // Now fetch the full data
       const { data, error } = await supabase
         .from("casting_calls")
         .select(`
@@ -39,7 +53,7 @@ export function PendingCastingCalls() {
         throw error;
       }
 
-      console.log("Fetched pending castings:", data);
+      console.log("Raw pending castings data:", data);
       return data || [];
     },
     enabled: !!user?.id && isAdmin,
