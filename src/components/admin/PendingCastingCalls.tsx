@@ -8,17 +8,27 @@ import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export function PendingCastingCalls() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: pendingCastings, isLoading: castingsLoading } = useQuery({
     queryKey: ["pendingCastings"],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id || !isAdmin) {
+        console.log("User not authorized to view pending castings");
+        return [];
+      }
 
+      console.log("Fetching pending castings for admin");
       const { data, error } = await supabase
         .from("casting_calls")
-        .select("*, profiles(full_name, email)")
+        .select(`
+          *,
+          profiles:created_by (
+            full_name,
+            email
+          )
+        `)
         .eq("status", "pending")
         .order("created_at", { ascending: false });
 
@@ -26,10 +36,11 @@ export function PendingCastingCalls() {
         console.error("Error fetching pending castings:", error);
         throw error;
       }
-      
+
+      console.log("Fetched pending castings:", data);
       return data || [];
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && isAdmin,
   });
 
   const handleCastingCall = async (id: string, status: "approved" | "rejected") => {
@@ -49,6 +60,10 @@ export function PendingCastingCalls() {
       toast.error("Failed to handle casting call");
     }
   };
+
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <div className="rounded-lg border">
