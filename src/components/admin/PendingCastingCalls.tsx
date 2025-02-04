@@ -15,8 +15,18 @@ export function PendingCastingCalls() {
     queryKey: ["pendingCastings"],
     queryFn: async () => {
       console.log("Fetching pending castings...");
+      console.log("Current user:", user?.id);
+      console.log("Is admin:", isAdmin);
       
-      if (!isAdmin) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user?.id)
+        .single();
+      
+      console.log("User profile:", profile);
+
+      if (!profile || profile.role !== 'admin') {
         console.log("User is not an admin");
         return [];
       }
@@ -35,7 +45,7 @@ export function PendingCastingCalls() {
       console.log("Fetched pending castings:", data);
       return data;
     },
-    enabled: !!user && isAdmin,
+    enabled: !!user,
   });
 
   const handleCastingCall = async (id: string, status: "approved" | "rejected") => {
