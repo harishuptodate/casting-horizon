@@ -158,7 +158,7 @@ export function CastingCard({
             )}
             <div className="flex flex-wrap gap-3 text-xs text-gray-300">
               <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
+                <Calendar className="h-3 w-3 text-white" />
                 <span>Deadline: {deadline}</span>
               </div>
               <div className="flex items-center gap-1">
@@ -195,3 +195,4 @@ export function CastingCard({
     </>
   );
 }
+
