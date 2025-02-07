@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,6 +51,7 @@ export function CastingCard({
   const [isFavorited, setIsFavorited] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { isAdmin } = useAuth();
+  const queryClient = useQueryClient();
 
   const handleFavorite = () => {
     setIsFavorited(!isFavorited);
@@ -76,12 +78,16 @@ export function CastingCard({
 
       if (error) throw error;
 
+      // Invalidate and refetch queries that include casting calls
+      queryClient.invalidateQueries({ queryKey: ["castings"] });
+      queryClient.invalidateQueries({ queryKey: ["pendingCastings"] });
+
       toast.success("Casting call deleted successfully");
+      setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Error deleting casting call:", error);
       toast.error("Failed to delete casting call");
     }
-    setIsDeleteDialogOpen(false);
   };
 
   const getAgeRangeText = () => {
