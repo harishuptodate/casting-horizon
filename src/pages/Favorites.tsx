@@ -7,6 +7,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+interface CastingCall {
+  id: string;
+  title: string;
+  role: string;
+  type: string;
+  description: string;
+  deadline: string;
+  location: string;
+  roles_available: number;
+  image: string;
+  is_verified: boolean;
+  min_age?: number;
+  max_age?: number;
+}
+
 const Favorites = () => {
   const { user } = useAuth();
 
@@ -27,7 +42,7 @@ const Favorites = () => {
             deadline,
             location,
             roles_available,
-            image_url,
+            image,
             is_verified,
             min_age,
             max_age
@@ -37,7 +52,7 @@ const Favorites = () => {
 
       if (error) throw error;
 
-      return data?.map(f => f.casting_calls) || [];
+      return (data?.map(f => f.casting_calls) || []) as CastingCall[];
     },
     enabled: !!user?.id,
   });
@@ -56,7 +71,7 @@ const Favorites = () => {
         <Alert variant="destructive" className="max-w-lg">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {error.message || "Failed to load favorites. Please try again later."}
+            {error instanceof Error ? error.message : "Failed to load favorites. Please try again later."}
           </AlertDescription>
         </Alert>
       </div>
@@ -71,7 +86,21 @@ const Favorites = () => {
         {favorites && favorites.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {favorites.map((casting) => (
-              <CastingCard key={casting.id} {...casting} />
+              <CastingCard 
+                key={casting.id}
+                id={casting.id}
+                title={casting.title}
+                role={casting.role}
+                type={casting.type}
+                description={casting.description}
+                deadline={casting.deadline}
+                location={casting.location}
+                roles={casting.roles_available}
+                image={casting.image}
+                isVerified={casting.is_verified}
+                min_age={casting.min_age}
+                max_age={casting.max_age}
+              />
             ))}
           </div>
         ) : (
