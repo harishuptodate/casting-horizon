@@ -53,16 +53,16 @@ export function CastingCard({
 
   const handleFavorite = () => {
     setIsFavorited(!isFavorited);
-    toast({
-      title: isFavorited ? "Removed from favorites" : "Added to favorites",
-      description: isFavorited ? "This casting call has been removed from your favorites" : "This casting call has been added to your favorites",
+    toast(isFavorited ? "Removed from favorites" : "Added to favorites", {
+      description: isFavorited 
+        ? "This casting call has been removed from your favorites" 
+        : "This casting call has been added to your favorites",
     });
   };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast({
-      title: "Link copied",
+    toast("Link copied", {
       description: "The link has been copied to your clipboard",
     });
   };
