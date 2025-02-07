@@ -15,7 +15,7 @@ interface CastingCall {
   description: string;
   deadline: string;
   location: string;
-  roles_available: number;
+  roles: number;
   image: string;
   is_verified: boolean;
   min_age?: number;
@@ -41,7 +41,7 @@ const Favorites = () => {
             description,
             deadline,
             location,
-            roles_available,
+            roles,
             image,
             is_verified,
             min_age,
@@ -52,7 +52,7 @@ const Favorites = () => {
 
       if (error) throw error;
 
-      return (data?.map(f => f.casting_calls) || []) as CastingCall[];
+      return data?.map(f => f.casting_calls) ?? [];
     },
     enabled: !!user?.id,
   });
@@ -95,7 +95,7 @@ const Favorites = () => {
                 description={casting.description}
                 deadline={casting.deadline}
                 location={casting.location}
-                roles={casting.roles_available}
+                roles={casting.roles}
                 image={casting.image}
                 isVerified={casting.is_verified}
                 min_age={casting.min_age}
@@ -114,3 +114,4 @@ const Favorites = () => {
 };
 
 export default Favorites;
+
