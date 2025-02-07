@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +7,6 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import Submit from "./pages/Submit";
-import Favorites from "./pages/Favorites";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +21,6 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/submit" element={<Submit />} />
-            <Route path="/favorites" element={<Favorites />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

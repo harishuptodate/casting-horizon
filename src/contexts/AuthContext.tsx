@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
@@ -20,7 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    // Initialize auth state
+    // Check active sessions and set the user
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -28,72 +27,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Set up realtime subscription
+    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setProfile(null);
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        }
-      } else if (event === 'USER_DELETED') {
-        setUser(null);
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
         setProfile(null);
       }
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   async function fetchProfile(userId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return;
-      }
-
-      setProfile(data);
-    } catch (error) {
-      console.error('Error in fetchProfile:', error);
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return;
     }
+
+    setProfile(data);
   }
 
   const login = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      toast.error("Login failed", {
+        description: error.message,
       });
-
-      if (error) {
-        toast.error("Login failed", {
-          description: error.message,
-        });
-        throw error;
-      }
-
-      toast.success("Successfully logged in!");
-    } catch (error: any) {
-      console.error('Login error:', error);
       throw error;
     }
+
+    toast.success("Successfully logged in!");
   };
 
   const logout = async () => {
     try {
+      // Clear local state first
+      setUser(null);
+      setProfile(null);
+
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Logout error:', error);
@@ -103,9 +88,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       
-      // Clear state
-      setUser(null);
-      setProfile(null);
       toast.success("Successfully logged out!");
     } catch (error: any) {
       console.error('Logout error:', error);

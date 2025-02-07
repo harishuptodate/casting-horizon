@@ -1,9 +1,8 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "./AuthModal";
-import { Plus, ClipboardList, LogIn, Heart } from "lucide-react";
+import { Plus, ClipboardList, LogIn } from "lucide-react";
 
 export function NavBar() {
   const { user, profile, logout } = useAuth();
@@ -26,12 +25,6 @@ export function NavBar() {
         <div className="ml-auto flex items-center gap-4">
           {user ? (
             <>
-              <Link to="/favorites">
-                <Button variant="outline" className="gap-2">
-                  <Heart className="h-4 w-4" />
-                  Favorites
-                </Button>
-              </Link>
               <Link to="/submit">
                 <Button variant="outline" className="gap-2">
                   <Plus className="h-4 w-4" />
