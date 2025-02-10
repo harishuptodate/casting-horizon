@@ -7,6 +7,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 
 interface CategoryFilterProps {
@@ -16,30 +17,32 @@ interface CategoryFilterProps {
 }
 
 export function CategoryFilter({
-  categories,
+  categories = [],
   selectedCategory,
   onCategoryChange,
 }: CategoryFilterProps) {
   return (
     <Command className="rounded-lg border shadow-md">
       <CommandInput placeholder="Search category..." />
-      <CommandEmpty>No category found.</CommandEmpty>
-      <CommandGroup>
-        {categories.map((category) => (
-          <CommandItem
-            key={category}
-            onSelect={() => onCategoryChange(category === selectedCategory ? "" : category)}
-          >
-            <Check
-              className={cn(
-                "mr-2 h-4 w-4",
-                selectedCategory === category ? "opacity-100" : "opacity-0"
-              )}
-            />
-            {category}
-          </CommandItem>
-        ))}
-      </CommandGroup>
+      <CommandList>
+        <CommandEmpty>No category found.</CommandEmpty>
+        <CommandGroup>
+          {categories.map((category) => (
+            <CommandItem
+              key={category}
+              onSelect={() => onCategoryChange(category === selectedCategory ? "" : category)}
+            >
+              <Check
+                className={cn(
+                  "mr-2 h-4 w-4",
+                  selectedCategory === category ? "opacity-100" : "opacity-0"
+                )}
+              />
+              {category}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
     </Command>
   );
 }
