@@ -46,6 +46,7 @@ interface CastingCallForm {
   roles: number;
   min_age?: number;
   max_age?: number;
+  gender: "male" | "female" | "any";
 }
 
 interface SubmitCastingCallProps {
@@ -69,6 +70,7 @@ export function SubmitCastingCall({ hideAdminRequest = false, onSuccess }: Submi
       deadline: "",
       location: "",
       roles: 1,
+      gender: "any",
     },
   });
 
@@ -280,7 +282,30 @@ export function SubmitCastingCall({ hideAdminRequest = false, onSuccess }: Submi
               </FormItem>
             )}
           />
-          
+
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Gender</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select gender requirement" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="any">Any</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {!hideAdminRequest && (
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
