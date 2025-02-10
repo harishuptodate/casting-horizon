@@ -32,6 +32,7 @@ interface CastingCardProps {
   isVerified?: boolean;
   min_age?: number;
   max_age?: number;
+  gender?: string;
 }
 
 export function CastingCard({
@@ -47,6 +48,7 @@ export function CastingCard({
   isVerified = false,
   min_age,
   max_age,
+  gender = "any",
 }: CastingCardProps) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -99,6 +101,10 @@ export function CastingCard({
       return `Up to ${max_age} years`;
     }
     return "Any age";
+  };
+
+  const getGenderText = () => {
+    return gender.charAt(0).toUpperCase() + gender.slice(1);
   };
 
   return (
@@ -171,7 +177,7 @@ export function CastingCard({
               </div>
               <div className="flex items-center gap-1">
                 <User className="h-3 w-3" />
-                <span>{getAgeRangeText()}</span>
+                <span>{getAgeRangeText()} • {getGenderText()}</span>
               </div>
             </div>
           </div>
@@ -195,4 +201,3 @@ export function CastingCard({
     </>
   );
 }
-
