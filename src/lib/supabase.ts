@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import { Database } from './database.types';
 
@@ -23,6 +24,7 @@ interface FetchCastingCallsParams {
   category?: string;
   minAge?: number;
   maxAge?: number;
+  searchQuery?: string;
 }
 
 export async function fetchCastingCalls({ 
@@ -30,6 +32,7 @@ export async function fetchCastingCalls({
   category = "",
   minAge,
   maxAge,
+  searchQuery = "",
 }: FetchCastingCallsParams) {
   try {
     const pageSize = 8;
@@ -37,10 +40,14 @@ export async function fetchCastingCalls({
     let query = supabase
       .from('casting_calls')
       .select('*')
-      .eq('status', 'approved')
-      .range(pageParam * pageSize, (pageParam + 1) * pageSize - 1)
-      .order('created_at', { ascending: false });
+      .eq('status', 'approved');
 
+    // Add search functionality
+    if (searchQuery) {
+      query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,role.ilike.%${searchQuery}%`);
+    }
+
+    // Add category filter
     if (category) {
       query = query.eq('type', category);
     }
@@ -52,6 +59,11 @@ export async function fetchCastingCalls({
     if (maxAge !== undefined) {
       query = query.lte('max_age', maxAge);
     }
+
+    // Add pagination
+    query = query
+      .range(pageParam * pageSize, (pageParam + 1) * pageSize - 1)
+      .order('created_at', { ascending: false });
 
     const { data, error } = await query;
 

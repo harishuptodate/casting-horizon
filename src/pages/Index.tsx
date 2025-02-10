@@ -33,6 +33,7 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [minAge, setMinAge] = useState<number | undefined>();
   const [maxAge, setMaxAge] = useState<number | undefined>();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const {
     data,
@@ -43,13 +44,14 @@ const Index = () => {
     isError,
     error,
   } = useInfiniteQuery({
-    queryKey: ["castings", selectedCategory, minAge, maxAge],
+    queryKey: ["castings", selectedCategory, minAge, maxAge, searchQuery],
     queryFn: ({ pageParam = 0 }) => 
       fetchCastingCalls({ 
         pageParam, 
         category: selectedCategory,
         minAge,
-        maxAge
+        maxAge,
+        searchQuery,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage?.hasMore ? lastPage.nextPage : undefined,
@@ -60,6 +62,10 @@ const Index = () => {
       fetchNextPage();
     }
   }, [inView, fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
 
   const handleAgeChange = (newMinAge: number | undefined, newMaxAge: number | undefined) => {
     setMinAge(newMinAge);
@@ -123,7 +129,7 @@ const Index = () => {
       <section className="sticky top-16 z-10 border-b bg-card/50 py-6 backdrop-blur-sm">
         <div className="container">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <SearchBar />
+            <SearchBar onSearch={handleSearch} />
             <div className="flex gap-4">
               <Popover>
                 <PopoverTrigger asChild>

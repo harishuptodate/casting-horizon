@@ -15,6 +15,7 @@ export type Database = {
           created_by: string
           deadline: string
           description: string
+          gender: string | null
           id: string
           image: string
           is_verified: boolean | null
@@ -32,6 +33,7 @@ export type Database = {
           created_by: string
           deadline: string
           description: string
+          gender?: string | null
           id?: string
           image: string
           is_verified?: boolean | null
@@ -49,6 +51,7 @@ export type Database = {
           created_by?: string
           deadline?: string
           description?: string
+          gender?: string | null
           id?: string
           image?: string
           is_verified?: boolean | null
