@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { CastingCard } from "@/components/CastingCard";
 import { NavBar } from "@/components/NavBar";
@@ -124,11 +125,21 @@ const Index = () => {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <SearchBar />
             <div className="flex gap-4">
-              <CategoryFilter 
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onCategoryChange={setSelectedCategory}
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <Filter className="h-4 w-4" />
+                    Categories
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-0">
+                  <CategoryFilter 
+                    categories={categories}
+                    selectedCategory={selectedCategory}
+                    onCategoryChange={setSelectedCategory}
+                  />
+                </PopoverContent>
+              </Popover>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="gap-2">
@@ -147,6 +158,13 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container py-12">
+        {selectedCategory && (
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold">
+              Showing results for: {selectedCategory}
+            </h2>
+          </div>
+        )}
         {allCastings.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {allCastings.map((casting) => (
@@ -155,7 +173,11 @@ const Index = () => {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-lg text-muted-foreground">No casting calls available.</p>
+            <p className="text-lg text-muted-foreground">
+              {selectedCategory 
+                ? `No casting calls available for ${selectedCategory}`
+                : "No casting calls available."}
+            </p>
           </div>
         )}
         
