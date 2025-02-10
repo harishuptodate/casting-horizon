@@ -21,17 +21,14 @@ export function CategoryFilter({
   onCategoryChange,
 }: CategoryFilterProps) {
   return (
-    <Command>
+    <Command className="rounded-lg border shadow-md">
       <CommandInput placeholder="Search category..." />
       <CommandEmpty>No category found.</CommandEmpty>
       <CommandGroup>
         {categories.map((category) => (
           <CommandItem
             key={category}
-            value={category}
-            onSelect={(currentValue) => {
-              onCategoryChange(currentValue === selectedCategory ? "" : currentValue);
-            }}
+            onSelect={() => onCategoryChange(category === selectedCategory ? "" : category)}
           >
             <Check
               className={cn(
