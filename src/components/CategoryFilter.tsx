@@ -1,3 +1,4 @@
+
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -7,11 +8,6 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 interface CategoryFilterProps {
   categories: string[];
@@ -25,30 +21,28 @@ export function CategoryFilter({
   onCategoryChange,
 }: CategoryFilterProps) {
   return (
-    <Popover>
-      <PopoverContent className="w-[200px] p-0">
-        <Command>
-          <CommandInput placeholder="Search category..." />
-          <CommandEmpty>No category found.</CommandEmpty>
-          <CommandGroup>
-            {categories.map((category) => (
-              <CommandItem
-                key={category}
-                value={category}
-                onSelect={() => onCategoryChange(category)}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedCategory === category ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {category}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <Command>
+      <CommandInput placeholder="Search category..." />
+      <CommandEmpty>No category found.</CommandEmpty>
+      <CommandGroup>
+        {categories.map((category) => (
+          <CommandItem
+            key={category}
+            value={category}
+            onSelect={(currentValue) => {
+              onCategoryChange(currentValue === selectedCategory ? "" : currentValue);
+            }}
+          >
+            <Check
+              className={cn(
+                "mr-2 h-4 w-4",
+                selectedCategory === category ? "opacity-100" : "opacity-0"
+              )}
+            />
+            {category}
+          </CommandItem>
+        ))}
+      </CommandGroup>
+    </Command>
   );
 }
