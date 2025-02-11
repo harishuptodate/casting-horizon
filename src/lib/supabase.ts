@@ -22,6 +22,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 interface FetchCastingCallsParams {
   pageParam?: number;
   category?: string;
+  gender?: string;
   minAge?: number;
   maxAge?: number;
   searchQuery?: string;
@@ -30,6 +31,7 @@ interface FetchCastingCallsParams {
 export async function fetchCastingCalls({ 
   pageParam = 0, 
   category = "",
+  gender = "",
   minAge,
   maxAge,
   searchQuery = "",
@@ -42,17 +44,18 @@ export async function fetchCastingCalls({
       .select('*')
       .eq('status', 'approved');
 
-    // Add search functionality
     if (searchQuery) {
       query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,role.ilike.%${searchQuery}%`);
     }
 
-    // Add category filter
     if (category) {
       query = query.eq('type', category);
     }
 
-    // Add age range filtering
+    if (gender && gender !== 'any') {
+      query = query.eq('gender', gender);
+    }
+
     if (minAge !== undefined) {
       query = query.gte('min_age', minAge);
     }
@@ -60,7 +63,6 @@ export async function fetchCastingCalls({
       query = query.lte('max_age', maxAge);
     }
 
-    // Add pagination
     query = query
       .range(pageParam * pageSize, (pageParam + 1) * pageSize - 1)
       .order('created_at', { ascending: false });

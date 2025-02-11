@@ -18,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { format } from "date-fns";
 
 interface CastingCardProps {
   id: string;
@@ -80,7 +81,6 @@ export function CastingCard({
 
       if (error) throw error;
 
-      // Invalidate and refetch queries that include casting calls
       queryClient.invalidateQueries({ queryKey: ["castings"] });
       queryClient.invalidateQueries({ queryKey: ["pendingCastings"] });
 
@@ -103,8 +103,23 @@ export function CastingCard({
     return "Any age";
   };
 
-  const getGenderText = () => {
-    return gender.charAt(0).toUpperCase() + gender.slice(1);
+  const formatDeadline = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'MMM dd, yyyy');
+    } catch {
+      return dateString;
+    }
+  };
+
+  const getGenderIcon = () => {
+    switch (gender.toLowerCase()) {
+      case 'male':
+        return <User className="h-3 w-3 text-blue-500" />;
+      case 'female':
+        return <User className="h-3 w-3 text-pink-500" />;
+      default:
+        return <User className="h-3 w-3" />;
+    }
   };
 
   return (
@@ -118,7 +133,6 @@ export function CastingCard({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
           
-          {/* Action buttons */}
           <div className="absolute right-2 top-2 flex gap-2">
             <Button
               variant="secondary"
@@ -165,7 +179,11 @@ export function CastingCard({
             <div className="flex flex-wrap gap-3 text-xs text-gray-300">
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3 text-white" />
-                <span>Deadline: {deadline}</span>
+                <span>{formatDeadline(deadline)}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {getGenderIcon()}
+                <span className="capitalize">{gender}</span>
               </div>
               <div className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
@@ -177,7 +195,7 @@ export function CastingCard({
               </div>
               <div className="flex items-center gap-1">
                 <User className="h-3 w-3" />
-                <span>{getAgeRangeText()} • {getGenderText()}</span>
+                <span>{getAgeRangeText()}</span>
               </div>
             </div>
           </div>

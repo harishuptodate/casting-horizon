@@ -1,12 +1,12 @@
-
 import { Button } from "@/components/ui/button";
 import { CastingCard } from "@/components/CastingCard";
 import { NavBar } from "@/components/NavBar";
 import { SearchBar } from "@/components/SearchBar";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { AgeRangeFilter } from "@/components/AgeRangeFilter";
+import { GenderFilter } from "@/components/GenderFilter";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2, AlertCircle, Filter } from "lucide-react";
+import { Loader2, AlertCircle, Filter, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { fetchCastingCalls } from "@/lib/supabase";
@@ -31,6 +31,7 @@ const categories = [
 const Index = () => {
   const { ref, inView } = useInView();
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedGender, setSelectedGender] = useState("");
   const [minAge, setMinAge] = useState<number | undefined>();
   const [maxAge, setMaxAge] = useState<number | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,11 +45,12 @@ const Index = () => {
     isError,
     error,
   } = useInfiniteQuery({
-    queryKey: ["castings", selectedCategory, minAge, maxAge, searchQuery],
+    queryKey: ["castings", selectedCategory, selectedGender, minAge, maxAge, searchQuery],
     queryFn: ({ pageParam = 0 }) => 
       fetchCastingCalls({ 
         pageParam, 
         category: selectedCategory,
+        gender: selectedGender,
         minAge,
         maxAge,
         searchQuery,
@@ -143,6 +145,20 @@ const Index = () => {
                     categories={categories}
                     selectedCategory={selectedCategory}
                     onCategoryChange={setSelectedCategory}
+                  />
+                </PopoverContent>
+              </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <User className="h-4 w-4" />
+                    Gender
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-0">
+                  <GenderFilter
+                    selectedGender={selectedGender}
+                    onGenderChange={setSelectedGender}
                   />
                 </PopoverContent>
               </Popover>
