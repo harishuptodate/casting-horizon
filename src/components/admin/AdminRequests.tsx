@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +14,8 @@ export function AdminRequests() {
   const { data: adminRequests, isLoading: requestsLoading } = useQuery({
     queryKey: ["adminRequests"],
     queryFn: async () => {
+      if (!user) throw new Error("Not authenticated");
+      
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -21,10 +24,17 @@ export function AdminRequests() {
       if (error) throw error;
       return data;
     },
+    // Disable the query if there's no user
+    enabled: !!user,
+    // Add retry logic
+    retry: 3,
+    retryDelay: 1000,
   });
 
   const handleAdminRequest = async (userId: string, status: "approved" | "rejected") => {
     try {
+      if (!user) throw new Error("Not authenticated");
+
       const { error } = await supabase.rpc("handle_admin_request", {
         target_user_id: userId,
         new_status: status,
